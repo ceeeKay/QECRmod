@@ -698,10 +698,12 @@ void() PutClientInServer =
 	self.trigger_field = spot;  // ELOHIM_MOD
 
 	self.classname = "player";
+	self.SendEntity = PL_SendEntity;
 	self.health = 100;
 	self.takedamage = DAMAGE_AIM;
 	self.solid = SOLID_SLIDEBOX;
 	self.movetype = MOVETYPE_WALK;
+	self.gravity = 1;
 	self.show_hostile = 0;
 	self.max_health = 100;
 	self.flags = FL_CLIENT;
@@ -740,9 +742,9 @@ if (self.antilag_flags & ANTILAG_FL_SPAWNTEST) // send the angles manually if we
 	self.fixangle = FALSE;
 	self.spawn_angles = self.angles;
 	self.spawn_time = time;
-	
+
 	msg_entity = self;
-	
+
 	WriteByte(MSG_ONE, SVC_SETANGLES); // Modified from SVC_SETANGLE in QCAntilag
 	WriteAngle(MSG_ONE, self.angles[0]);
 	WriteAngle(MSG_ONE, self.angles[1]);
@@ -1007,7 +1009,8 @@ void() PlayerDeathThink =
 	respawn();
 };
 
-
+// CSQCPrediction: This is moved into pl_phys.qc PL_Jump(), to be accessed by both CSQC and SSQC
+/*
 void() PlayerJump =
 {
 	if (self.flags & FL_WATERJUMP)
@@ -1050,7 +1053,7 @@ void() PlayerJump =
 	sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
 	self.velocity_z = self.velocity_z + 270;
 };
-
+*/
 
 /*
 ===========
@@ -1182,7 +1185,8 @@ void() CheckWaterJump =
 		if (trace_fraction == 1)
 		{	// open at eye level
 			self.flags = self.flags | FL_WATERJUMP;
-			self.velocity_z = 225;
+			// CSQCPrediction: To prevent framerate dependent yucky jumps, we have to raise this velocity_z to 260 or so. There is probably a better solution but NQ waterjump sucks.
+			self.velocity_z = 260;
 			self.flags = self.flags - (self.flags & FL_JUMPRELEASED);
 			self.teleport_time = time + 2;	// safety net
 			return;
@@ -1198,7 +1202,15 @@ PlayerPreThink
 Called every frame before physics are run
 ================
 */
+
+// CSQCPrediction: We need to stub PlayerPreThink so the engine doesn't do anything silly, this is a simple copy-paste.
+// CSQCPrediction: Also remove if (self.button2) PlayerJump(); code from prethink, this is handled more predictably now in the pl_phys code
 void() PlayerPreThink =
+{
+	// Moved to PM_PlayerPreThink
+};
+
+void() PM_PlayerPreThink =
 {
 	// ELOHIM_MOD
 	//
@@ -1271,11 +1283,6 @@ void() PlayerPreThink =
 		return;
 	}
 
-	if (self.button2)
-		PlayerJump ();
-	else
-		self.flags = self.flags | FL_JUMPRELEASED;
-
 	if (self.currentammo == 0)
 	{
 		if (self.weapon != IT_AXE)
@@ -1288,7 +1295,7 @@ void() PlayerPreThink =
 		}
 	}
 	// END_MOD
-};
+} //; // Does a semicolon matter??
 
 /*
 ================
@@ -1453,7 +1460,14 @@ PlayerPostThink
 Called every frame after physics are run
 ================
 */
+
+// CSQCPrediction: We need to stub PlayerPostThink so the engine doesn't do anything silly, this is a simple copy-paste.
 void() PlayerPostThink =
+{
+	// Moved to PM_PlayerPostThink
+}
+
+void() PM_PlayerPostThink =
 {
 	// ELOHIM_MOD
 	//
@@ -1520,7 +1534,7 @@ void() PlayerPostThink =
 		UpdateLastOrigin();
 		self.antilag_updatetime = time + 0.01;
 	}
-	
+
 	if (gameover)
 		return;     // intermission or finale
 	if (self.deadflag)
@@ -1575,14 +1589,17 @@ called when a player connects to a server
 */
 void() ClientConnect =
 {
+	// CSQCPrediction: Entrypoint for client connecting, this decides if they're a QW or NQ client and how to handle their inputs.
+	PM_ClientConnect();
+
 	// QCAntilag: tell ourselves which server we're in
 	if (is_running_fte) // if we're on FTE, we can use the QW way
 	{
 		sprint (self, "QCAntilag in FTE server mode\n");
 		string protocol = infokey(self, "protocol");
 		float is_qw_client = (strstrofs(protocol, "quakeworld") != -1);
-		
-		if (!self.playerexflags) 
+
+		if (!self.playerexflags)
 		{
 			if (infokey(self, "playerexflags") == "")
 			{
@@ -1594,7 +1611,7 @@ void() ClientConnect =
 				self.playerexflags = infokeyf(self, "playerexflags");
 			}
 		}
-		
+
 	} else {
 		sprint (self, "QCAntilag in QE server mode\n");
 	}
@@ -1625,6 +1642,9 @@ void() ClientDisconnect =
 		return;
 	// if the level end trigger has been activated, just return
 	// since they aren't *really* leaving
+
+	// CSQCPrediction: Cleanup any stuff we have to cleanup related to our prediction code.
+	PM_ClientDisconnect();
 
 	// ELOHIM_MOD - check to see if we've already done this
 	// (can happen since elohim_kick_player calls ClientDisconnect directly

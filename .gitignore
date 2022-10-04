@@ -1,6 +1,8 @@
-progs.dat
-progs.lno
+*.dat
+*.lno
 *.exe
 *.log
 *.pak
 *.zip
+config.cfg
+fte.cfg

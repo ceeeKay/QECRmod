@@ -180,13 +180,20 @@ void() worldspawn =
 	else
 		cvar_set ("sv_gravity", "800");
 
+	// CSQCPrediction: This is shared with QEAntilag and our code, this prediction basically requires FTE as the server.
 	// QCAntilag: Check for FTE server properties
 	if (cvar("pr_checkextension"))
 		is_running_fte = checkextension("FTE_MULTIPROGS");
 	if (is_running_fte)
+	{
 		cvar_set ("sv_gameplayfix_multiplethinks", "0");
-
-// custom map title
+		cvar_set ("sv_mintic", "0.016667");
+		localcmd("serverinfo maxfps 60\n");
+	}
+	
+	PM_InitVariables(); // initializes the physics parameter variables.
+	
+	// custom map title
 	self.message = GetMapName(self.message);
 
 // the area based ambient sounds MUST be the first precache_sounds
@@ -367,6 +374,9 @@ void() StartFrame =
 	{
 		client_responsetime_get_all();
 	}
+
+	// CSQCPrediction: entrypoint for our physics related code to run.
+	PM_StartFrame();
 };
 
 /*

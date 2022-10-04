@@ -38,7 +38,6 @@ const float MULTICAST_PHS_R = 4;	/* The multicast message is reliably sent to on
 const float MULTICAST_PVS_R = 5;	/* The multicast message is reliably sent to only players that can potentially see the specified origin. Players might still not receive it if they cannot see the event. */
 const float MULTICAST_ONE_R = 7;	/* The multicast message is reliably sent to the player (AND ALL TRACKING SPECTATORS) specified in the msg_entity global. The specified origin is ignored */
 const float MULTICAST_ONE_R_NOSPECS = 10;	/* The multicast message is reliably sent to the player specified in the msg_entity global. The specified origin is ignored */
-float(vector where, float set) multicast = #0:multicast;
 //
 
 // QCAntilag: globals

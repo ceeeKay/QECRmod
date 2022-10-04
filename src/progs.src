@@ -1,5 +1,11 @@
 ../progs.dat
 
+#define SSQC
+#define NQSSQC
+
+#pragma sourcefile csprogs.src
+
+fteextensions.qc
 defs.qc
 maps.qc
 
@@ -27,6 +33,11 @@ console.qc  // elohim mod
 options.qc  // elohim mod
 
 hud.qc // hud mod
+
+prediction/tools.qc
+prediction/pl_defs.qc
+prediction/pl_phys.qc
+prediction/pl_net.qc
 
 subs.qc
 //fight.qc
