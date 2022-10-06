@@ -1105,6 +1105,7 @@ void() PL_SimulateClientCommands
 void(float tleft) PL_BasicXerp
 {
 	//PHYS_CheckStuck(self);
+	tleft = min(tleft, 0.1);
 	
 	while (tleft > 0)
 	{
