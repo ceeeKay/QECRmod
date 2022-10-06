@@ -13,7 +13,12 @@ float(string cmdstr) CSQC_ConsoleCommand
 	
 }
 
-void(float apilevel, string enginename, float engineversion) CSQC_Init =
+void() CSQC_Ent_Remove
+{
+	remove(self);
+}
+
+void(float apilevel, string enginename, float engineversion) CSQC_Init
 {
 	V_ViewmodelCreate();
 }
