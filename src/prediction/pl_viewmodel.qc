@@ -82,7 +82,7 @@ void V_ViewmodelCreate()
 {
 	v_viewmodel = spawn();
 	v_viewmodel.drawmask = MASK_CUSTOMVIEWMODEL;
-	v_viewmodel.renderflags = 1;
+	v_viewmodel.renderflags = 5; // RF_VIEWMODEL | RF_DEPTHHACK;
 }
 
 
